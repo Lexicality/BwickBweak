@@ -134,18 +134,18 @@ function Ball:update(dt)
 	-- TODO: This needs to bounce!
 	if x - size < 0 then
 		x = size;
-		self:setHeading(-vx, vy);
+		self:bounce("vertical");
 	elseif x + size > bounds.x then
 		x = bounds.x - size;
-		self:setHeading(-vx, vy);
+		self:bounce("vertical");
 	end
 
 	if y - size < 0 then
 		y = size;
-		self:setHeading(vx, -vy);
+		self:bounce("horizontal");
 	elseif y + size > bounds.y then
 		y = bounds.y - size;
-		self:setHeading(vx, -vy);
+		self:bounce("horizontal");
 	end
 
 	self.x = x;
@@ -183,6 +183,20 @@ function Ball:getHeading()
 	return self.vx, self.vy;
 end
 
+function Ball:bounce(dir, erraticness)
+	if dir ~= "horizontal" and dir ~= "vertical" then
+		error("Invalid value for argument #1: " .. dir, 2);
+	elseif not erraticness then
+		erraticness = 0;
+	end
+	-- TODO: Erraticity
+	local vx, vy = self.vx, self.vy;
+	if dir == "vertical" then
+		self:setHeading(-vx, vy);
+	else
+		self:setHeading(vx, -vy);
+	end
+end
 
 ----------------------------------
 --                              --
