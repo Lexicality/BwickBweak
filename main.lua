@@ -1,6 +1,8 @@
 local bounds = {
 	x = 800;
 	y = 600;
+	lowestBrick = 0;
+	belowPaddle = 0;
 }
 
 function new(wot, ...)
@@ -93,6 +95,55 @@ function Player:update(dt)
 	elseif self.x + self.width > bounds.x then
 		self.x = bounds.x  - self.width;
 	end
+end
+
+----------------------------------
+--                              --
+--            Vector            --
+--                              --
+----------------------------------
+
+local Vector = {
+	x = 0;
+	y = 0;
+}
+
+function Vector:ctor(x, y)
+	if x then
+		self.x = x;
+	end
+	if y then
+		self.y = y;
+	end
+end
+
+----------------------------------
+--                              --
+--         CollisionBox         --
+--                              --
+----------------------------------
+
+
+local CollisionBox = {
+	top = 0;
+	right = 0;
+	bottom = 0;
+	left = 0;
+}
+
+function CollisionBox:ctor(x, y, width, height)
+	if not (x and y and width and height) then
+		print(x, y, width, height);
+		error("aa");
+	end
+	self.top = y;
+	self.right = x + width;
+	self.bottom = y + height;
+	self.left = x;
+end
+
+function CollisionBox.FromRect(rect)
+	return new(CollisionBox, rect.x, rect.y, rect.width, rect.height);
 end
 
 ----------------------------------
@@ -198,6 +249,35 @@ function Ball:bounce(dir, erraticness)
 	end
 end
 
+function Ball:getCollisionBox()
+	local x, y, width, height;
+	width = self.size * 2;
+	height = width;
+	x = self.x - self.size;
+	y = self.y - self.size;
+	return new(CollisionBox, x, y, width, height);
+end
+
+function Ball:testCollision(rect)
+
+	local r1, r2 = self:getCollisionBox(), CollisionBox.FromRect(rect);
+
+	if r2.left > r1.right
+	or r2.right < r1.left
+	or r2.top > r1.bottom
+	or r2.bottom < r1.top then
+		return false;
+	end
+
+	local collision, erraticness = false, false;
+
+	-- LOL should probably make this actually detec
+	collision = "horizontal";
+
+	-- TODO: Erraticity based on distance to edge
+	return collision, erraticness;
+end
+
 ----------------------------------
 --                              --
 --            Bricks            --
@@ -225,7 +305,6 @@ function Brick:draw()
 	love.graphics.setColor(self.colour:unpack());
 	love.graphics.rectangle("fill", self.x, self.y, self.width, self.height);
 end
-
 
 ------------------------------
 ------------------------------
@@ -259,28 +338,58 @@ function love.load()
 	ball = new(Ball);
 	ball:stickToPaddle(ply);
 
-	-- test
-	local angle = 2;
-	ball:setAngle(angle);
-	local wrong = ball:getAngle();
-	assert(wrong == angle, "Expected " .. wrong .. " to equal " .. angle);
+	bounds.belowPaddle = ply.y + Player.height - Ball.size;
+	bounds.lowestBrick = y;
 end
 
 function love.update(dt)
 	ply:update(dt);
+
 	-- for _, brick in ipairs(bricks) do
 	-- 	brick:update(dt#);
 	-- end
+
 	if ball.paddleStuck then
 		if ply.keys.up then
 			ball.paddleStuck = false;
 			ball:setAngle(math.pi / 4);
-			ball.velocity = 100;
+			ball.velocity = 200;
 		else
-			ball:stickToPaddle(ply)
+			ball:stickToPaddle(ply);
 		end
-	else
-		ball:update(dt);
+		return;
+	end
+
+	-- Ball updatey bouncey
+	ball:update(dt);
+
+	if ball.y < bounds.belowPaddle then
+		-- GAME OVER
+		-- TODO: Actually end the round/game/we
+		return;
+	end
+
+	local collision, erraticness;
+
+	-- Paddle
+	collision, erraticness = ball:testCollision(ply);
+	if collision then
+		ball:bounce(collision, erraticness);
+	end
+
+	-- Check if we're anywhere near the bricks
+	if ball.y > bounds.lowestBrick then
+		-- Nothing to do here, ball is in free space.
+		return;
+	end
+
+	-- Go through all the bricks because why bother being efficient
+	for _, brick in ipairs(bricks) do
+		collision, erraticness = ball:testCollision(brick);
+		if collision then
+			ball:bounce(collision, erraticness);
+			break;
+		end
 	end
 end
 
@@ -293,6 +402,11 @@ local function drawDebuggingLines()
 	love.graphics.setColor(100, 100, 100);
 	love.graphics.line(bounds.x/2, 0, bounds.x/2, bounds.y);
 	love.graphics.line(0, bounds.y/2, bounds.x, bounds.y/2);
+	local a = ball.y > bounds.lowestBrick;
+	love.graphics.setColor(a and 255 or 0, 255, 0);
+	love.graphics.line(0, bounds.lowestBrick, bounds.x, bounds.lowestBrick);
+	love.graphics.setColor(255, 0, 0);
+	love.graphics.line(0, bounds.belowPaddle, bounds.x, bounds.belowPaddle);
 end
 
 function love.draw()
