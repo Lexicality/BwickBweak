@@ -262,6 +262,13 @@ function Ball:testCollision(rect)
 
 	local r1, r2 = self:getCollisionBox(), CollisionBox.FromRect(rect);
 
+	if rect.debug then
+		rect.debug.left   = r2.left > r1.right;
+		rect.debug.right  = r2.right < r1.left;
+		rect.debug.top    = r2.top > r1.bottom;
+		rect.debug.bottom = r2.bottom < r1.top;
+	end
+
 	if r2.left > r1.right
 	or r2.right < r1.left
 	or r2.top > r1.bottom
@@ -289,6 +296,7 @@ local Brick = {
 	width = 60;
 	height = 20;
 	colour = {};
+	debug = {};
 }
 
 function Brick:ctor(x, y, r, g, b, a)
@@ -299,11 +307,46 @@ function Brick:ctor(x, y, r, g, b, a)
 		self.y = y;
 	end
 	self.colour = new(Colour, r, g, b, a);
+	self.debug = {
+		top = false;
+		right = false;
+		bottom = false;
+		left = false;
+	}
+end
+
+function Brick:update(dt)
+	self.debug.top = false;
+	self.debug.right = false;
+	self.debug.bottom = false;
+	self.debug.left = false;
+end
+
+local function conditionalColour(yes)
+	if yes then
+		love.graphics.setColor(0, 255, 0);
+	else
+		love.graphics.setColor(255, 0, 0);
+	end
 end
 
 function Brick:draw()
 	love.graphics.setColor(self.colour:unpack());
 	love.graphics.rectangle("fill", self.x, self.y, self.width, self.height);
+
+	local x, y, width, height = self.x, self.y, self.width, self.height;
+	local debug = self.debug;
+	local lw = love.graphics.getLineWidth();
+	love.graphics.setLineWidth(5);
+	conditionalColour(debug.left);
+	love.graphics.line(x, y, x, y + height);
+	conditionalColour(debug.right);
+	love.graphics.line(x + width, y, x + width, y + height);
+	conditionalColour(debug.top);
+	love.graphics.line(x, y, x + width, y);
+	conditionalColour(debug.top);
+	love.graphics.line(x, y + height, x + width, y + height);
+	love.graphics.setLineWidth(lw);
 end
 
 ------------------------------
@@ -345,9 +388,9 @@ end
 function love.update(dt)
 	ply:update(dt);
 
-	-- for _, brick in ipairs(bricks) do
-	-- 	brick:update(dt#);
-	-- end
+	for _, brick in ipairs(bricks) do
+		brick:update(dt);
+	end
 
 	if ball.paddleStuck then
 		if ply.keys.up then
@@ -384,7 +427,7 @@ function love.update(dt)
 	end
 
 	-- Go through all the bricks because why bother being efficient
-	for _, brick in ipairs(bricks) do
+	for _, brick in pairs(bricks) do
 		collision, erraticness = ball:testCollision(brick);
 		if collision then
 			ball:bounce(collision, erraticness);
