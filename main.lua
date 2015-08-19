@@ -349,6 +349,9 @@ function Brick:draw()
 	love.graphics.setLineWidth(lw);
 end
 
+function Brick:shatter()
+end
+
 ------------------------------
 ------------------------------
 ------------------------------
@@ -427,10 +430,12 @@ function love.update(dt)
 	end
 
 	-- Go through all the bricks because why bother being efficient
-	for _, brick in pairs(bricks) do
+	for key, brick in pairs(bricks) do
 		collision, erraticness = ball:testCollision(brick);
 		if collision then
 			ball:bounce(collision, erraticness);
+			brick:shatter();
+			bricks[key] = nil;
 			break;
 		end
 	end
