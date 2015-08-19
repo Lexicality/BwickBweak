@@ -388,7 +388,7 @@ end
 function love.update(dt)
 	ply:update(dt);
 
-	for _, brick in ipairs(bricks) do
+	for _, brick in pairs(bricks) do
 		brick:update(dt);
 	end
 
@@ -456,7 +456,7 @@ function love.draw()
 	drawDebuggingLines();
 
 	ply:draw();
-	for _, brick in ipairs(bricks) do
+	for _, brick in pairs(bricks) do
 		brick:draw();
 	end
 	ball:draw();
