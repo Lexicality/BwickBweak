@@ -406,7 +406,7 @@ function love.update(dt)
 	-- Ball updatey bouncey
 	ball:update(dt);
 
-	if ball.y < bounds.belowPaddle then
+	if ball.y > bounds.belowPaddle then
 		-- GAME OVER
 		-- TODO: Actually end the round/game/we
 		return;
