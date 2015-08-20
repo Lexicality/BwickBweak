@@ -296,7 +296,7 @@ local Brick = {
 	width = 60;
 	height = 20;
 	colour = {};
-	debug = {};
+	-- debug = {};
 }
 
 function Brick:ctor(x, y, r, g, b, a)
@@ -307,19 +307,19 @@ function Brick:ctor(x, y, r, g, b, a)
 		self.y = y;
 	end
 	self.colour = new(Colour, r, g, b, a);
-	self.debug = {
-		top = false;
-		right = false;
-		bottom = false;
-		left = false;
-	}
+	-- self.debug = {
+	-- 	top = false;
+	-- 	right = false;
+	-- 	bottom = false;
+	-- 	left = false;
+	-- }
 end
 
 function Brick:update(dt)
-	self.debug.top = false;
-	self.debug.right = false;
-	self.debug.bottom = false;
-	self.debug.left = false;
+	-- self.debug.top = false;
+	-- self.debug.right = false;
+	-- self.debug.bottom = false;
+	-- self.debug.left = false;
 end
 
 local function conditionalColour(yes)
@@ -334,19 +334,19 @@ function Brick:draw()
 	love.graphics.setColor(self.colour:unpack());
 	love.graphics.rectangle("fill", self.x, self.y, self.width, self.height);
 
-	local x, y, width, height = self.x, self.y, self.width, self.height;
-	local debug = self.debug;
-	local lw = love.graphics.getLineWidth();
-	love.graphics.setLineWidth(5);
-	conditionalColour(debug.left);
-	love.graphics.line(x, y, x, y + height);
-	conditionalColour(debug.right);
-	love.graphics.line(x + width, y, x + width, y + height);
-	conditionalColour(debug.top);
-	love.graphics.line(x, y, x + width, y);
-	conditionalColour(debug.top);
-	love.graphics.line(x, y + height, x + width, y + height);
-	love.graphics.setLineWidth(lw);
+	-- local x, y, width, height = self.x, self.y, self.width, self.height;
+	-- local debug = self.debug;
+	-- local lw = love.graphics.getLineWidth();
+	-- love.graphics.setLineWidth(5);
+	-- conditionalColour(debug.left);
+	-- love.graphics.line(x, y, x, y + height);
+	-- conditionalColour(debug.right);
+	-- love.graphics.line(x + width, y, x + width, y + height);
+	-- conditionalColour(debug.top);
+	-- love.graphics.line(x, y, x + width, y);
+	-- conditionalColour(debug.top);
+	-- love.graphics.line(x, y + height, x + width, y + height);
+	-- love.graphics.setLineWidth(lw);
 end
 
 function Brick:shatter()
